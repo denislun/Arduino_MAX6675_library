@@ -14,11 +14,22 @@ MAX6675::MAX6675(int cs, int mosi, int miso, int sck){
 double MAX6675::readTemp(){ 
   digitalWrite(_cs,LOW); 
   delay(1);
-  int temp = shiftIn(_miso, _sck, MSBFIRST);
+  int temp = readBits();
   temp <<= 8; 
-  temp |= shiftIn(_miso, _sck, MSBFIRST); 
+  temp |= readBits(); 
   digitalWrite(_cs,HIGH); 
   if(temp & 0x4) return MAX6675_TERMINAL_CONNECTION_ERROR; 
   temp >>= 3; 
   return temp*.25;
+}
+
+int MAX6675::readBits(){
+  int resp = 0; 
+  for(int i = 0; i < 8; i ++){
+    digitalWrite(_sck,HIGH);
+    
+    resp |= digitalRead(_miso) << (7-i);  
+    digitalWrite(_sck,LOW); 
+  }
+  return resp; 
 }
